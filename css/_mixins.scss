@@ -1,0 +1,20 @@
+@mixin icon-before {
+	&:before {
+		display: block;
+		font-family: FontAwesome;
+		@content;
+	}
+}
+
+%vertical-middle {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+%absolute-middle {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
