@@ -1,37 +1,56 @@
-const { remote, ipcRenderer } = require('electron');
-const fs = require('fs');
-const mkdirp = require('mkdirp');
+const {remote,ipcRenderer} = require('electron');
 
-let cropImageWidth = 600,
-	cropImageHeight = 600
+const stores = {
+	library: localforage.createInstance({name: 'library'}),
+	files: localforage.createInstance({name: 'files'}),
+	settings: localforage.createInstance({name: 'settings'})
+}
+
+// keep a cached reference
+let files = []
 
 window.onload = () => {
-	ipcRenderer.on('sync-start', (event, payload) => {
-		let pins = payload
-		Object.keys(pins).forEach((pin) => {
-			let image = new Image();
-			let canvas = document.createElement('canvas');
-			let ctx = canvas.getContext('2d');
-			let path = remote.app.getPath('userData');
 
-			image.src = pins[pin].image.original.url;
-			image.onload = () => {
-				ctx.drawImage(image, 70, 20, 50, 50, 0, 0, 100, 100);
-				image = null;
-				// strip off the data: url prefix to get just the base64-encoded bytes
-				let data = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '');
-				let buffer = new Buffer(data, 'base64');
-				// create the path if does not yet exist
-				mkdirp(`${path}/Imagecache/`, (err) => {
-					if (err) throw err;
-					fs.writeFile(`${path}/Imagecache/${pins[pin].id}.jpg`, buffer, 'utf-8', (err) => {
-						ipcRenderer.send('sync-done', {
-							pin: pin,
-							path: `${path}/Imagecache/${pins[pin].id}.jpg`
-						});	
-					});	
-				});
-			}
+	ipcRenderer.on('load-records', (event, payload) => {
+		let iterator = payload.store
+		let records = []
+
+		stores[iterator].iterate((value, key, i) => {
+			records.push(value)
+		}, () => {
+			// iteration done, cache the files and send signal to rendered process
+			if (iterator == 'files') files = records
+			ipcRenderer.send('load-records-done', {
+				'state': iterator, 
+				'records': records
+			})
 		})
-	});
-};
+	})
+
+	ipcRenderer.on('create-record', (event, payload) => {
+		let store = payload.store
+		let id = payload.id
+		let record = payload.record
+
+		stores[store].setItem(id, JSON.parse(record))
+	})
+
+	ipcRenderer.on('update-record', (event, payload) => {
+		let store = payload.store
+		let id = payload.id
+		let record = payload.record
+
+		stores[store].setItem(id, JSON.parse(record))
+	})
+
+	ipcRenderer.on('filter-records', (event, payload) => {
+		let records = files.filter((file) => {
+			return payload.groups.indexOf(file.group) > -1
+		})
+		ipcRenderer.send('filter-records-done', {
+			'state': 'files',
+			'records': records
+		})
+	})
+
+}

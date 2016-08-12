@@ -1,129 +1,89 @@
 <template>
-	<div class="editor" v-if="pin" :style="{backgroundColor: backgroundColor(pin.color)}" transition="fade-in" >
-		<!-- <span class="editor__button button--close" @click="closeEditor">X</span> -->
-		<div class="editor__scroller" @click="closeEditor">	
-			<div>
-				<img :src="pin.image.original.url">
-			</div>
-		</div>
-		<Inspector :model="pin"></Inspector>
+	<div id="wrapper">
+		<textarea id="editor"></textarea>
+		<div id="toolbar">toolbar</div>
 	</div>
 </template>
 
 <script>
-	import Inspector from './Inspector.vue'
+	import CodeMirror from 'codemirror'
+	import 'codemirror/mode/gfm/gfm'
+	import {saveContent} from '../vuex/actions'
+
+	let activeId
+	// let cheerio = require('cheerio')
 
 	export default {
 
-		data() {
-			return {
-				pin: null
-			}
-		},
-
-		components: {
-			Inspector
+		created() {
+			this.$watch('active', this.updateContent)
+			this.$nextTick(this.initCodeMirror)
 		},
 
 		methods: {
-			showImage ($pin) {
-				this.pin = $pin
+			initCodeMirror() {
+				this.editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+        	lineNumbers: true,
+        	lineWrapping: true,
+        	scrollbarStyle: 'null',
+        	mode: 'gfm'
+    		});
+
+				this.editor.on('change', (e) => {
+					this.active.content = this.editor.getValue()
+					this.saveContent()
+				});
 			},
 
-			closeEditor () {
-				console.log('closing editor')
-				this.pin = null
-			},
-
-			backgroundColor ($color) {
-				if ($color) {
-					const hex = $color.replace('#','');
-	    			const r = parseInt(hex.substring(0,2), 16);
-	    			const g = parseInt(hex.substring(2,4), 16);
-	    			const b = parseInt(hex.substring(4,6), 16);
-	    			const average = (r+g+b) / 3;
-	    			// treshold to check if the color is white enough
-					return (average > 245) ? $color : '#222';
-				} else {
-					return '#222';
-				}
-				
-			},
-
-			// http://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
-			// version 2
-			shade ($color) {
-				const percent = '-0.4';
-				let f=parseInt($color.slice(1),16),t=percent<0?0:255,p=percent<0?percent*-1:percent,R=f>>16,G=f>>8&0x00FF,B=f&0x0000FF;
-				return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);
+			updateContent() {
+				// if (this.active.id != activeId) {
+					this.editor.setValue(this.active.content)
+					activeId = this.activeId	
+				// }
 			}
 		},
 
-		events: {
-			'close-editor': 'closeEditor', 
-			'show-image': 'showImage'
+		vuex: {
+			getters: {
+				active: state => state.active.file
+			},
+			actions: {
+				saveContent
+			}
 		}
 	}
 </script>
 
-<style lang="sass" scoped>
-
-	.editor {
+<style lang="sass">
+	
+	#wrapper {
 		display: flex; 
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		// background-color: #222 !important;
-		bottom: 0;
-
-		&.fade-in-transition {
-			opacity: 1;
-			transition: opacity 250ms;
-		}
-
-		&.fade-in-enter,
-		&.fade-in-leave {
-			opacity: 0;
-		}
-
-	}
-
-	.editor__scroller {
-		overflow-y: scroll;
+		flex-direction: column; 
 		flex-grow: 1;
-		// display: flex;
-    	// justify-content: center;
-    	align-items: center; 
-    	// min-height: calc(100vh - 50px);
+		height: calc(100vh - 23px);
+		background-color: mix(#fff, #f6f6f6, 70%);
 		
-		> div {
-			// display: flex;
-		 	min-height: calc(100vh - 50px);
-    		
-			img {
-				display: block;  
-				max-width: 100%; 
-				transition: height 250ms;
-				margin: 0 auto;
-				height: auto; 
-				
-				.fit-vertical & {
-					max-height: calc(100vh - 50px);
-					object-fit: cover;	
-				}
-				
-			}
-		}
+		.is-resizing & {
+      cursor: col-resize;
+    }
 	}
 
-	.editor__button {
-		color: #fff;
-		cursor: pointer;
-		position: absolute;
-		right: 20px;
-		top: 20px;
-		font-size: 30px;
-		z-index: 5; 
+	#toolbar {
+		border-top: 1px solid mix(#000, #f6f6f6, 20%);
+		align-items: flex-end;
+		min-height: 30px; 
 	}
+
+	#editor {
+		text-rendering: optimizeLegibility;
+		// max-width: 600px; 
+		width: 100%; 
+		flex-grow: 1;
+		position: relative;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	
+
 </style>

@@ -1,85 +1,114 @@
 <template>
-	<Toolbar></Toolbar>
-	<Aside></Aside>
-	<Pins></Pins>
+	<!-- <title></title> -->
+	<main>
+		<groups></groups>
+		<!-- <files></files> -->
+		<!-- <editor></editor>	 -->
+	</main>
+	
 </template>
 
 <script>
-	// import Bind from 'bind.js'
-	// import Clusterize from 'clusterize.js'
-	import $ from 'jquery'
-	import { ipcRenderer } from 'electron'
-	import Toolbar from './components/Toolbar.vue'
-	import Aside from './components/Aside.vue'
-	import Pins from './components/Pins.vue'
-	
+	import title from './components/Title.vue'
+	import groups from './components/Groups.vue'
+	import files from './components/Files.vue'
+	import editor from './components/Editor.vue'
+	import Mousetrap from 'mousetrap'
+	import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
+	import {setState} from './vuex/actions'
+	const ipc = require('electron').ipcRenderer;
+	const {remote} = require('electron')
+	const {Menu, MenuItem} = remote
+	const menu = new Menu()	
 
 	export default {
-		components: {
-			Toolbar,
-			Aside,
-			Pins,
+
+		created() {
+			// keep track of (global) shortcuts
+			Mousetrap.bindGlobal('command+s', this.saveFile)
+			Mousetrap.bindGlobal('command+n', this.newFile)
+			
+			// setup context menu
+			// @TODO: place context menu in groups.vue
+			const vm = this
+			menu.append(new MenuItem({label: 'New group..', click() { vm.contextMenu('new-group')}}))
+			menu.append(new MenuItem({type: 'separator'}))
+			menu.append(new MenuItem({label: 'Rename..', click() { vm.contextMenu('rename')}}))
+
+			// listen for messages coming from the main process
+			this.listen()
+			// load initial app state from db
+			this.loadApp()
 		},
 
-	  	ready() {
-	  		// show the most recent pins when opening
-	  		document.querySelectorAll('li')[0].click()
-	  		// let service = new SyncService();
-	  		// this.boards = service.fetchBoards();
-	  		// Retrieving the auth code
-	  		// ipcRenderer.on('api-code', (e, code) => {
-	  		// 	$.post(`https://api.pinterest.com/v1/oauth/token?grant_type=authorization_code&client_id=4839736519480585228&client_secret=4ac3803ea94d6d50b3143939d1cfef4f7f25db0c665e998166fb8108e306e261&code=${code}`, (response) => {
-	  		// 		console.log(response)
-	  		// 		})
-	  		// })
+		vuex: {
+			getters: {
+			},
+	    actions: {
+	      // newFile,
+	      // saveFile,
+	      setState,
+	      // removeActive
+	    }
+	  },
+
+	  methods: {
+	  	loadApp() {
+	  		ipc.send('load-records', {store: 'files'})
+	  		ipc.send('load-records', {store: 'library'})
+	  		ipc.send('load-records', {store: 'settings'})
 	  	},
 
-	  	methods: {
-	  		selectBoard ($id, $name) {
-	  			this.$broadcast('select-board', $id, $name)
-	  		},
-
-	  		refreshMasonry () {
-	  			this.$broadcast('refresh-masonry')
-	  		},
-
-	  		toggleInspector () {
-	  			this.$broadcast('toggle-inspector')
-	  		},
-
-	  		showImage ($pin) {
-	  			this.$broadcast('show-image', $pin)
-	  		}
-
+	  	listen() {
+	  		ipc.on('load-records-done', (event, payload) => { this.setState(payload) })
+				ipc.on('filter-records-done', (event, payload) => { this.setState(payload) })
 	  	},
 
-	  	events: {
-	  		'select-board': 'selectBoard',
-	  		'toggle-inspector': 'toggleInspector',
-	  		'refresh-masonry': 'refreshMasonry',
-	  		'show-image': 'showImage'
+	  	contextMenu(action) {
+	  		this.$broadcast(`context-click-${action}`)
+	  	},
+
+	  	openContextMenu() {
+	  		menu.popup(remote.getCurrentWindow())
 	  	}
+	  },
+
+	  events: {
+			'open-context-menu': 'openContextMenu'
+		},
+
+		components: {
+			title,
+			groups,
+			files,
+			editor
+		}
 	}
 </script>
 
 <style lang="sass">
+	*,
+	*:before,
+	*:after {
+		margin: 0;
+		padding: 0;
+		outline: 0;	
+	}
 
-html,
-body {
-	height: 100%;
-	overflow: hidden;
-	background-color: #222;
-	font-family: sans-serif;
-}
+	ul,
+	li {
+		list-style: none;
+	}
 
-*,
-*:before,
-*:after {
-	box-sizing: border-box;
-	margin: 0;
-	padding: 0;
-}
+	html,
+	body {
+		height: 100%;
+		overflow: hidden;
+		background: rgba(0, 0, 0, 0);
+	}
 
-main {
-}
+	main {
+		user-select: none;
+		display: flex; 
+	}
 </style> 

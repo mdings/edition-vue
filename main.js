@@ -16,18 +16,19 @@ function getParameterByName(name, url) {
 }
 
 function createWindow (code) {
-  let win = new BrowserWindow({width: 800, height: 600, minWidth: 600, minHeight: 700, titleBarStyle: 'hidden'});
-  win.loadURL(`file:// ${__dirname}/index.html`);
+  mainWindow = new BrowserWindow({width: 800, height: 600, minWidth: 600, minHeight: 600, titleBarStyle: 'hidden'});
+  backgroundWindow = createBackgroundWindow();
+  mainWindow.loadURL(`file:// ${__dirname}/index.html`);
 
-  win.webContents.on('dom-ready', () => {
-    win.webContents.send('api-code', code);
+  mainWindow.webContents.on('dom-ready', () => {
+    mainWindow.webContents.send('api-code', code);
   });
 
-  win.on('closed', function() {
-    win = null;
+  mainWindow.on('closed', function() {
+    mainWindow = null;
   });
 
-  return win;
+  return mainWindow;
 }
 
 function createBackgroundWindow() {
@@ -90,7 +91,7 @@ function createAuthWindow () {
   authWindow.loadURL('https://api.pinterest.com/oauth/?response_type=code&client_id=4839736519480585228&state=valid&scope=read_public,write_public&redirect_uri=https://localhost:3000/test.html');
 }
 
-app.on('ready', createAuthWindow);
+app.on('ready', createWindow);
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
@@ -104,5 +105,9 @@ app.on('activate', function () {
   }
 });
 
-ipcMain.on('sync-done', (event, payload) => mainWindow.webContents.send('sync-done', payload));
-ipcMain.on('sync-start', (event, payload) => backgroundWindow.webContents.send('sync-start', payload));
+ipcMain.on('load-records', (event, payload) => backgroundWindow.webContents.send('load-records', payload));
+ipcMain.on('load-records-done', (event, payload) => mainWindow.webContents.send('load-records-done', payload));
+ipcMain.on('filter-records', (event, payload) => backgroundWindow.webContents.send('filter-records', payload));
+ipcMain.on('filter-records-done', (event, payload) => mainWindow.webContents.send('filter-records-done', payload));
+ipcMain.on('create-record', (event, payload) => backgroundWindow.webContents.send('create-record', payload));
+ipcMain.on('update-record', (event, payload) => backgroundWindow.webContents.send('update-record', payload));

@@ -1,11 +1,13 @@
 import Vue from 'vue'
-import VueResource from 'vue-resource'
-Vue.use(VueResource);
-
+// import VueResource from 'vue-resource'
+import store from './vuex/store'
 import App from './App.vue'
 
+
+// Vue.use(VueResource)
+
 new Vue({
-	// store,
+	  store,
   	el: 'body',
   	components: { App }
 })

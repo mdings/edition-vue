@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron'
+import {ipcRenderer} from 'electron'
 
 export default {
 
