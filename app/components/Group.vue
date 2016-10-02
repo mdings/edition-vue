@@ -1,10 +1,10 @@
 <template>
   <li>
     <div :class="{'is-folder': isFolder,  'is-open': open}" @click="toggle()"></div>
-    <span 
-      contenteditable="editable" 
-      @contextmenu="openContext(model)"
-      @click="setActiveGroup(model)"
+    <span data-id="{{model.id}}"
+      @contextmenu="openContextMenu(model)"
+      contenteditable="false" 
+      @click="setActive(model)"
       @drop="drop(group)" 
       @dragover="dragOver()" 
       @dragleave="dragLeave()"
@@ -26,7 +26,6 @@
 
     data: function () {
       return {
-        editable: true,
         open: false
       }
     },
@@ -63,6 +62,13 @@
     },
 
     methods: {
+      setActive(model) {
+        if (event.target.getAttribute('contenteditable') == "true") {
+          event.stopPropagation()  
+        }
+        this.setActiveGroup(model)
+      },
+
       drop() {
         const fileId = event.dataTransfer.getData('fileId')
         const group = event.srcElement.getAttribute('data-id')
@@ -92,25 +98,15 @@
         }
       },
 
-      openContext(model) {
-        this.$dispatch('open-context-menu', event.target, model)
-      },
-
-      renameGroup (event, model) {
-        let elm = event.target
-        elm.setAttribute('contenteditable', true)
-        elm.focus()
-        elm.addEventListener('keypress', (e) => {
-          if (e.keyCode == 13 || e.keyCode == 10) {
-            // set the new filename to the model and disable editing
-            model.name = elm.textContent
-            elm.setAttribute('contenteditable', false)
-            // save the name-change to the db
-            this.updateGroup()
-            e.preventDefault()
-          }
-        })
+      openContextMenu(model) {
+        let e = event
+        this.setActiveGroup(model)
+        setTimeout(() => {
+          this.$dispatch('open-context-menu', e, model)  
+        }, 10)
+        
       }
+
     }
   }
 </script>
@@ -122,12 +118,17 @@
     margin-left: 10px;
   }
 
+  span {
+    white-space: nowrap;
+  }
+
   .is-active {
     background-color: #f2f3f2;
   }
 
   [contenteditable=true] {
-    background: #fff
+    background: red;
+    color: #fff;
   }
 
   .is-folder {

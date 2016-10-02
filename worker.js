@@ -1,6 +1,7 @@
 const {remote,ipcRenderer} = require('electron');
 
 const stores = {
+
 	library: localforage.createInstance({name: 'library'}),
 	files: localforage.createInstance({name: 'files'}),
 	settings: localforage.createInstance({name: 'settings'})
@@ -12,15 +13,21 @@ let files = []
 window.onload = () => {
 
 	ipcRenderer.on('load-records', (event, payload) => {
+
+		// console.log('loading records')
 		let iterator = payload.store
 		let records = []
 
 		stores[iterator].iterate((value, key, i) => {
+
 			records.push(value)
+
 		}, () => {
+
 			// iteration done, cache the files and send signal to rendered process
 			if (iterator == 'files') files = records
 			ipcRenderer.send('load-records-done', {
+
 				'state': iterator, 
 				'records': records
 			})
@@ -28,6 +35,8 @@ window.onload = () => {
 	})
 
 	ipcRenderer.on('create-record', (event, payload) => {
+
+		// console.log('creating record')
 		let store = payload.store
 		let id = payload.id
 		let record = payload.record
@@ -36,6 +45,9 @@ window.onload = () => {
 	})
 
 	ipcRenderer.on('update-record', (event, payload) => {
+
+		// console.log('updating record')
+		// console.log(payload)
 		let store = payload.store
 		let id = payload.id
 		let record = payload.record
@@ -44,6 +56,7 @@ window.onload = () => {
 	})
 
 	ipcRenderer.on('filter-records', (event, payload) => {
+		// console.log('filtering record')
 		let records = files.filter((file) => {
 			return payload.groups.indexOf(file.group) > -1
 		})

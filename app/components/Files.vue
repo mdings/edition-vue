@@ -1,80 +1,90 @@
 <template>
-  <aside class="panel">
-    <div class="files">
-      <div v-show="active.group.name">Showing files in {{active.group.name}} ({{filterData.length}})</div>
-      <div v-show="!active.group.name">Showing all files ({{files.length}})</div>
+    <div class="flex-panel">
+        <div class="files">
+            <div v-if="active.group">Showing files in {{active.group.name}} ({{filterData.length}})</div>
+            <div v-if="!active.group">Showing all files ({{files.length}})</div>
 
-      <div v-for="file in files" 
-        class="file"
-        @click="setActiveFile(file)" 
-        :class="{'is-active': file == this.active.file}" 
-        draggable="true" 
-        @dragstart="drag(file)">
-        {{file.content}}
-      </div>
+            <div v-for="file in files" 
+                class="file"
+                @click="setActiveFile(file)" 
+                :class="{'is-active': file == this.active.file}" 
+                draggable="true" 
+                @dragstart="drag(file)">
+                {{file.name}}
+            </div>
+        </div>
+
+        <resizer></resizer>
+
     </div>
-    <div class="actions">
-      <button @click="newFile()">new file</button>
-    </div>
-    <resizer></resizer>
-  </aside>
 </template>
 
 <script>
-  import resizer from './Resizer.vue'
-  import file from './File.vue'
-  import _ from 'lodash'
-  import {newFile, setActiveFile, setActiveDragFile} from '../vuex/actions'
+    import resizer from './Resizer.vue'
+    import file from './File.vue'
+    import _ from 'lodash'
+    import {setActiveFile} from '../vuex/actions'
   
-  export default {
+    export default {
 
-    ready() {
+        ready() {
 
-    },
+        },
 
+        components: {
+            resizer,
+            file
+        },
 
-    components: {
-      resizer,
-      file
-    },
+        vuex: {
+            getters: {
+                files: state => state.files,
+                active: state => state.active
+            },
 
-    vuex: {
-      getters: {
-        files: state => state.files,
-        active: state => state.active
-      },
-      actions: {
-        newFile,
-        setActiveFile,
-        setActiveDragFile
-      }
-    },
+            actions: {
+                // newFile,
+                setActiveFile,
+                // setActiveDragFile
+            }
+        },
 
-    computed: {
-      filterData() {
-        return this.files.filter((file) => {
-          if (this.active.group && this.active.group.ids) {
-            return this.active.group.ids.indexOf(file.group) > -1
-          } else {
-            return file
-          }
-        })
-      }
-    },
+        computed: {
+            filterData() {
+                return this.files.filter((file) => {
+                    if (this.active.group && this.active.group.ids) {
+                        return this.active.group.ids.indexOf(file.group) > -1
+                    } else {
+                        return file
+                    }
+                })
+            }
+        },
 
-    methods: {
-      drag(file) {
-        this.setActiveDragFile(file)
-        event.dataTransfer.setData('fileId', file.id);
-        event.dataTransfer.setData('fileGroup', file.group);
-      }
+        methods: {
+            drag(file) {
+                this.setActiveDragFile(file)
+                event.dataTransfer.setData('fileId', file.id);
+                event.dataTransfer.setData('fileGroup', file.group);
+            }
+        }
+
     }
-
-  }
 </script>
 
 <style lang="sass" scoped>
- .files {
+
+  .flex-panel {
+
+    min-width: 200px;
+  }
+
+  .files {
+
+      overflow-y: auto;
+      height: 100%;
+  }
+ /*.files {
    width: 400px;
    height: 100vh;
    overflow: scroll;
@@ -88,5 +98,5 @@
 
  .is-active {
    background-color: blue
- }
+ }*/
 </style>

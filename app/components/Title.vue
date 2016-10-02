@@ -1,6 +1,6 @@
 <template>
   <div class="title">
-    Edition <span v-show="active.file.name">- {{active.file.name}}</span>
+    Edition <span v-if="active.file">- {{active.file.name}}</span>
   </div>
   <!-- <div class="toolbar">
     <button class="button button--new-file" @click="newFile"></button>
@@ -8,7 +8,7 @@
 </template>
 
 <script>
-  import {newFile} from '../vuex/actions'
+  import {} from '../vuex/actions'
 
   export default {
     vuex: {
@@ -16,7 +16,7 @@
         active: state => state.active
       },
       actions: {
-        newFile
+        // newFile
       }
     }
   }

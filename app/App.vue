@@ -1,9 +1,9 @@
 <template>
-	<!-- <title></title> -->
-	<main>
+	<title></title>
+	<main @click="clickApp">
 		<groups></groups>
-		<!-- <files></files> -->
-		<!-- <editor></editor>	 -->
+		<files></files>
+		<editor></editor>	
 	</main>
 	
 </template>
@@ -13,27 +13,17 @@
 	import groups from './components/Groups.vue'
 	import files from './components/Files.vue'
 	import editor from './components/Editor.vue'
-	import Mousetrap from 'mousetrap'
-	import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
-	import {setState} from './vuex/actions'
+	// import Mousetrap from 'mousetrap'
+	// import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
+	import {setState, createFile} from './vuex/actions'
 	const ipc = require('electron').ipcRenderer;
-	const {remote} = require('electron')
-	const {Menu, MenuItem} = remote
-	const menu = new Menu()	
+	
 
 	export default {
 
 		created() {
 			// keep track of (global) shortcuts
-			Mousetrap.bindGlobal('command+s', this.saveFile)
-			Mousetrap.bindGlobal('command+n', this.newFile)
-			
-			// setup context menu
-			// @TODO: place context menu in groups.vue
-			const vm = this
-			menu.append(new MenuItem({label: 'New group..', click() { vm.contextMenu('new-group')}}))
-			menu.append(new MenuItem({type: 'separator'}))
-			menu.append(new MenuItem({label: 'Rename..', click() { vm.contextMenu('rename')}}))
+			// Mousetrap.bindGlobal('command+n', this.createFile)
 
 			// listen for messages coming from the main process
 			this.listen()
@@ -47,6 +37,7 @@
 	    actions: {
 	      // newFile,
 	      // saveFile,
+	      createFile,
 	      setState,
 	      // removeActive
 	    }
@@ -61,21 +52,14 @@
 
 	  	listen() {
 	  		ipc.on('load-records-done', (event, payload) => { this.setState(payload) })
-				ipc.on('filter-records-done', (event, payload) => { this.setState(payload) })
+			ipc.on('filter-records-done', (event, payload) => { this.setState(payload) })
 	  	},
 
-	  	contextMenu(action) {
-	  		this.$broadcast(`context-click-${action}`)
-	  	},
-
-	  	openContextMenu() {
-	  		menu.popup(remote.getCurrentWindow())
+	  	clickApp() {
+	  		this.$broadcast('global-app-click')
 	  	}
 	  },
 
-	  events: {
-			'open-context-menu': 'openContextMenu'
-		},
 
 		components: {
 			title,
@@ -110,5 +94,14 @@
 	main {
 		user-select: none;
 		display: flex; 
+		height: calc(100vh - 23px);
+		overflow: hidden;
+	}
+
+	.flex-panel {
+
+		position: relative;
+		height: 100%;
+		overflow: hidden;
 	}
 </style> 

@@ -1,30 +1,31 @@
 <template>
-	<aside class="panel" :style="{width: settings.toolbarWidth}">
-		<div class="files">
+	<div class="flex-panel" :style="{width: settings.toolbarWidth}">
+		<div class="groups">
 			<span @click="resetActiveGroup()">On My Mac</span>
 			<div v-for="item in sortedData">
-				<group class="item" :model="item" data-id="{{item.id}}" track-by="item.id"></group>
+				<group class="item" :model="item"></group>
 			</div>
-			
-
 			<!-- <div v-for="file in library" @click="setActiveFile(file)" class="panel__file" :class="{'is-active': active === file}">
 				{{file.type}}-{{file.name}}
 				<span class="file__close" @click="closeFile(file)">x</span>
 			</div> -->
 		</div>
 		<div class="actions">
-			<!-- <button @click="newFile()">new file</button> -->
+			<button @click="createFile()">new file</button> 
 			<button @click="createGroup()">new group</button>
 		</div>
 		<resizer></resizer>
-	</aside>
 </template>
 
 <script>
 	import resizer from './Resizer.vue'
 	import group from './Group.vue'
 	import _ from 'lodash'
-	import {createGroup, updateGroup, resetActiveGroup} from '../vuex/actions'
+	import {createGroup, createFile, updateGroup, resetActiveGroup} from '../vuex/actions'
+
+	const {remote} = require('electron')
+	const {Menu, MenuItem} = remote
+	const menu = new Menu()	
 
 	export default {
 
@@ -35,11 +36,17 @@
 
 		data() {
 			return {
-				contextMenu: null
+				contextMenuElm: null,
+				contextMenuModel: null
 			}
 		},
 
 		created () {
+			// setup context menu
+			const vm = this
+			menu.append(new MenuItem({label: 'New group..', click() { vm.clickContextMenuOption('new-group')}}))
+			menu.append(new MenuItem({type: 'separator'}))
+			menu.append(new MenuItem({label: 'Rename..', click() { vm.renameFromContextMenu() }}))
 		},
 
 		vuex: {
@@ -52,6 +59,7 @@
 
 			actions: {
 				createGroup,
+				createFile,
 				updateGroup,
 				resetActiveGroup
 				// closeFile,
@@ -63,7 +71,47 @@
 		},
 
 		methods: {
+			openContextMenu(event, model) {
+				this.closeRename()
+				this.contextMenuElm = event.target
+				this.contextMenuModel = model
+				// position the context-menu a bit to the right
+				menu.popup(remote.getCurrentWindow(), event.clientX + 5, event.clientY, -1)
+			},
 
+			renameFromContextMenu() {
+				this.contextMenuElm.setAttribute('contenteditable', true)
+				this.contextMenuElm.focus()
+				document.execCommand('selectAll', false, null)
+				this.contextMenuElm.addEventListener('keypress', this.editName)
+			},
+
+			editName() {
+				if (event.keyCode == 13) {
+					event.preventDefault()
+					this.closeRename()
+				}
+			},
+
+			closeRename() {
+				if (this.contextMenuElm && this.contextMenuModel) {
+					// update the model name with the new value
+					this.contextMenuModel.name = this.contextMenuElm.textContent
+					// persist the group name to the db
+					this.updateGroup()
+					this.contextMenuElm.setAttribute('contenteditable', false)
+					this.contextMenuElm.removeEventListener('keypress', this.editName)
+					this.contextMenuElm = null
+					this.contextMenuModel = null
+				}
+			}
+
+			
+		},
+
+		events: {
+			'open-context-menu': 'openContextMenu',
+			'global-app-click': 'closeRename'
 		},
 
 		computed: {
@@ -84,7 +132,12 @@
 <style lang="sass" scoped>
 	@import "../../css/mixins";
 	
-	.panel {
+	.flex-panel {
+
+		min-width: 200px;
+	}
+
+	/*.panel {
 		display: flex;
 		flex-direction: column; 
 		flex-grow: 0;
@@ -135,6 +188,6 @@
 		border-top: 1px solid mix(#000, #f6f6f6, 20%);
 		height: 30px;
 		align-items: flex-end;
-	}
+	}*/
 
 </style>

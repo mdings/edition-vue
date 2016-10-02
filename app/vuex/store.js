@@ -23,9 +23,29 @@ const state = {
 
 const mutations = {
 
-  /* CRUD ACTIONS*/
+  /* CRUD ACTIONS */
   CREATE_FILE (state) {
+    let id = uniqid()
+    
+    const file = {
+      id: id,
+      group: state.active.group.id,
+      type: 'file',
+      name: 'Untitled.md' + _.random(1,50),
+      created: new Date().getTime(),
+      modified: new Date().getTime(),
+      content: ''
+    }
 
+    console.log(file)
+
+    state.files.push(file)
+
+    ipc.send('create-record', {
+      'store': 'files',
+      'id': id,
+      'record': JSON.stringify(file)
+    })
   },
 
   CREATE_GROUP (state) {
@@ -58,6 +78,11 @@ const mutations = {
 
   UPDATE_FILE (state) {
 
+    ipc.send('update-record', {
+      'store': 'files',
+      'id': state.active.file.id,
+      'record': JSON.stringify(state.active.file)
+    })
   },
 
   UPDATE_GROUP (state) {
@@ -85,12 +110,28 @@ const mutations = {
     state[payload.state] = payload.records
   },
 
-  SET_ACTIVE (state, type, payload) {
-    state.active[type] = payload
+  SET_ACTIVE_GROUP (state, group) {
+    // get the ids recursively from the groups
+    const getIds = (ids, node) => {
+      ids.push(node.id)
+      if (node.nodes && node.nodes.length) {
+        node.nodes.forEach((node) => {
+          getIds(ids, node)
+        })
+      }
+    }
+    let ids = []
+    getIds(ids, group)
+    ipc.send('filter-records', {'groups': ids})
+    state.active.group = group
   },
 
-  RESET_ACTIVE (state, type) {
-    state.active[type] = null
+  RESET_ACTIVE_GROUP (state, type) {
+    state.active.group = null
+  },
+
+  SET_ACTIVE_FILE (state, file) {
+    state.active.file = file
   },
 
 
@@ -157,30 +198,30 @@ const mutations = {
     })
   },
 
-  SET_ACTIVE_GROUP (state, group) {
-    // get the ids recursively from the groups
-    const getIds = (ids, node) => {
-      ids.push(node.id)
-      if (node.nodes && node.nodes.length) {
-        node.nodes.forEach((node) => {
-          getIds(ids, node)
-        })
-      }
-    }
-    let ids = []
-    getIds(ids, group)
-    ipc.send('filter-records', {'groups': ids})
-    state.active.group = group
-    state.active.group.ids = ids
-  },
+  // SET_ACTIVE_GROUP (state, group) {
+  //   // get the ids recursively from the groups
+  //   const getIds = (ids, node) => {
+  //     ids.push(node.id)
+  //     if (node.nodes && node.nodes.length) {
+  //       node.nodes.forEach((node) => {
+  //         getIds(ids, node)
+  //       })
+  //     }
+  //   }
+  //   let ids = []
+  //   getIds(ids, group)
+  //   ipc.send('filter-records', {'groups': ids})
+  //   state.active.group = group
+  //   state.active.group.ids = ids
+  // },
 
   // SET_STATE (state, payload) {
   //   state[payload.state] = payload.records
   // },
 
-  SET_ACTIVE_FILE (state, file) {
-    state.active.file = file
-  },
+  // SET_ACTIVE_FILE (state, file) {
+  //   state.active.file = file
+  // },
 
   SET_ACTIVE_DRAG_FILE (state, file) {
     state.active.drag = file

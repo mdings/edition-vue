@@ -22,12 +22,6 @@ module.exports = {
   },
   target: 'electron',
   babel: {
-    "presets": ["es2015"],
-    "plugins": ["transform-runtime"]
-  },
-  plugins: [
-    new webpack.ExternalsPlugin('commonjs', [
-      'electron'
-    ])
-  ]
+    "presets": ["es2015"]
+  }
 }

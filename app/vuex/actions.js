@@ -1,21 +1,41 @@
 export const createGroup = ({dispatch}) => {
-  dispatch('CREATE_GROUP')
+
+    dispatch('CREATE_GROUP')
 }
 
 export const updateGroup = ({dispatch}) => {
-  dispatch('UPDATE_GROUP')
+
+    dispatch('UPDATE_GROUP')
 }
 
-export const setActiveGroup = ({dispatch}, payload) => {
-  dispatch('SET_ACTIVE', 'group', payload)
+export const setActiveGroup = ({dispatch}, group) => {
+
+    dispatch('SET_ACTIVE_GROUP', group)
 }
 
 export const resetActiveGroup = ({dispatch}) => {
-  dispatch('RESET_ACTIVE', 'group')
+
+    dispatch('RESET_ACTIVE_GROUP')
 }
 
 export const setState = ({dispatch}, payload) => {
-  dispatch('SET_STATE', payload)
+  
+    dispatch('SET_STATE', payload)
+}
+
+export const createFile = ({dispatch}) => {
+
+    dispatch('CREATE_FILE')
+}
+
+export const updateFile = ({dispatch}) => {
+
+    dispatch('UPDATE_FILE')
+}
+
+export const setActiveFile = ({dispatch}, file) => {
+
+    dispatch('SET_ACTIVE_FILE', file)
 }
 
 

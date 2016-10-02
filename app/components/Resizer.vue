@@ -42,7 +42,7 @@
   }
 </script>
 
-<style lang="sass">
+<style lang="sass" scoped>
   .panel {
     &__resizer {
       position: absolute;

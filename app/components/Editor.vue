@@ -1,45 +1,53 @@
 <template>
-	<div id="wrapper">
-		<textarea id="editor"></textarea>
-		<div id="toolbar">toolbar</div>
+	<div class="flex-panel flex-grow">
+		<div id="editor"></div>
+		<div class="zero-state" v-show="!active">
+			Klik op een file om deze aan te passen.
+			Of maak een nieuwe file aan.
+		</div>
 	</div>
 </template>
 
 <script>
-	import CodeMirror from 'codemirror'
-	import 'codemirror/mode/gfm/gfm'
-	import {saveContent} from '../vuex/actions'
+	import Editor from 'editor'
+	import {updateFile} from '../vuex/actions'
 
 	let activeId
-	// let cheerio = require('cheerio')
 
 	export default {
 
-		created() {
+		data() {
+			return {
+				markup: null
+			}
+		},
+
+		ready() {
+
 			this.$watch('active', this.updateContent)
-			this.$nextTick(this.initCodeMirror)
+			this.$nextTick(this.initEditor)
 		},
 
 		methods: {
-			initCodeMirror() {
-				this.editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
-        	lineNumbers: true,
-        	lineWrapping: true,
-        	scrollbarStyle: 'null',
-        	mode: 'gfm'
-    		});
 
-				this.editor.on('change', (e) => {
-					this.active.content = this.editor.getValue()
-					this.saveContent()
-				});
+			initEditor() {
+
+				this.editor = new Editor('#editor')
+				// this.editor.on('change', () => {
+
+				// 	if(this.active) {
+
+				// 		// this.active.content = this.editor.getTextForStorage()
+				// 		// this.updateFile()
+				// 	}
+					
+				// })
 			},
 
 			updateContent() {
-				// if (this.active.id != activeId) {
-					this.editor.setValue(this.active.content)
-					activeId = this.activeId	
-				// }
+
+				console.log('updating content')
+				this.editor.setText(this.active.content)
 			}
 		},
 
@@ -48,7 +56,8 @@
 				active: state => state.active.file
 			},
 			actions: {
-				saveContent
+				updateFile
+				// saveContent
 			}
 		}
 	}
@@ -56,34 +65,71 @@
 
 <style lang="sass">
 	
-	#wrapper {
-		display: flex; 
-		flex-direction: column; 
-		flex-grow: 1;
-		height: calc(100vh - 23px);
-		background-color: mix(#fff, #f6f6f6, 70%);
-		
-		.is-resizing & {
-      cursor: col-resize;
-    }
-	}
+	.flex-grow {
 
-	#toolbar {
-		border-top: 1px solid mix(#000, #f6f6f6, 20%);
-		align-items: flex-end;
-		min-height: 30px; 
+		flex-grow: 1;
 	}
 
 	#editor {
-		text-rendering: optimizeLegibility;
-		// max-width: 600px; 
-		width: 100%; 
-		flex-grow: 1;
-		position: relative;
-		left: 50%;
-		transform: translateX(-50%);
+
+		overflow: scroll;
+		height: 100%;
+		/*counter-reset: paragraph;*/
+		
+		
+
 	}
 
-	
 
+	.hljs-emphasis {
+
+		font-weight: bold
+	}
+
+	.editor__section {
+		font-size: 18px;
+		position: relative;
+		text-shadow: 0 0 0 #000;
+		color: transparent;
+		padding: 0 50px;
+			line-height: 32px;
+			min-height: 32px;
+
+			.hljs-section {
+
+				font-weight: bold;
+			}
+		}
+
+		#editor > div:not(:empty)::before {
+			display: block;
+			position: absolute;
+			left: 0;
+			/*counter-increment: paragraph;*/
+			/*content: counter(paragraph);*/
+		}
+	
+	/*#editor {
+
+		min-width: 500px;
+		border: 1px solid red;
+		width: 100%;
+		height: 100vh;
+
+		& > div {
+			min-height: 24px;
+		}
+
+		.hljs-section {
+
+			font-weight: bold;
+		}
+
+		.hljs-emphasis {
+
+			font-weight: bold;
+		}
+	}*/
+	
+	
 </style>
