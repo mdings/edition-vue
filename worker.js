@@ -7,10 +7,11 @@ const stores = {
 	settings: localforage.createInstance({name: 'settings'})
 }
 
-// keep a cached reference
-let files = []
-
 window.onload = () => {
+
+	/*
+	** Loads all records
+	*/
 
 	ipcRenderer.on('load-records', (event, payload) => {
 
@@ -24,8 +25,6 @@ window.onload = () => {
 
 		}, () => {
 
-			// iteration done, cache the files and send signal to rendered process
-			if (iterator == 'files') files = records
 			ipcRenderer.send('load-records-done', {
 
 				'state': iterator, 
@@ -33,6 +32,10 @@ window.onload = () => {
 			})
 		})
 	})
+
+	/*
+	** Creates a record
+	*/
 
 	ipcRenderer.on('create-record', (event, payload) => {
 
@@ -44,26 +47,48 @@ window.onload = () => {
 		stores[store].setItem(id, JSON.parse(record))
 	})
 
+	/*
+	** Updates a record
+	*/
+
 	ipcRenderer.on('update-record', (event, payload) => {
 
 		// console.log('updating record')
 		// console.log(payload)
-		let store = payload.store
-		let id = payload.id
-		let record = payload.record
+		const store = payload.store
+		const id = payload.id
+		const record = payload.record
 
 		stores[store].setItem(id, JSON.parse(record))
 	})
 
+
+	/*
+	** Filters records inside a group
+	*/
+
 	ipcRenderer.on('filter-records', (event, payload) => {
-		// console.log('filtering record')
-		let records = files.filter((file) => {
-			return payload.groups.indexOf(file.group) > -1
+
+		let records = []
+
+		stores.files.iterate((record, key, i) => {
+
+
+			if (payload.groups.indexOf(record.group) > -1) {
+
+				console.log('pusing to record')
+				records.push(record)
+			}
+
+		}, () => {
+
+			ipcRenderer.send('filter-records-done', {
+
+				'state': 'files',
+				'records': records
+			})
 		})
-		ipcRenderer.send('filter-records-done', {
-			'state': 'files',
-			'records': records
-		})
+		
 	})
 
 }

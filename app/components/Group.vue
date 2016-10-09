@@ -8,7 +8,7 @@
       @drop="drop(group)" 
       @dragover="dragOver()" 
       @dragleave="dragLeave()"
-      :class="{'is-active': active.group === model}">
+      :class="{'is-active': ativeGroup === model}">
       {{model.name}}
     </span>
     <ul v-show="open" v-if="isFolder">
@@ -19,7 +19,7 @@
 
 <script>
   import _ from 'lodash'  
-  import {setActiveGroup, updateGroup} from '../vuex/actions'
+  import {setActiveGroup, updateGroup, updateFile} from '../vuex/actions'
 
   export default {
     name: 'group',
@@ -36,13 +36,15 @@
 
     vuex: {
       getters: {
-        library: state => state.library,
-        active: state => state.active,
-        files: state => state.files
+          activeGroup: state => state.active.group,
+          activeDragFile: state => state.active.drag
+       
+        // files: state => state.files
       },
       actions: {
         setActiveGroup,
-        updateGroup
+        updateGroup,
+        updateFile
         // setActiveGroup,
         // saveRecord
       }
@@ -72,8 +74,14 @@
       drop() {
         const fileId = event.dataTransfer.getData('fileId')
         const group = event.srcElement.getAttribute('data-id')
-        this.active.drag.group = group
+
         event.srcElement.removeAttribute('style')
+        // set the new group for the file
+        this.activeDragFile.group = group
+
+        this.updateFile(this.activeDragFile.id, this.activeDragFile)
+        this.setActiveGroup(this.activeGroup)
+        
       },
 
       dragOver() {

@@ -1,6 +1,7 @@
 <template>
 	<div class="flex-panel flex-grow">
 		<div id="editor"></div>
+		<input type="button" v-on:click="saveContent()" value="save">
 		<div class="zero-state" v-show="!active">
 			Klik op een file om deze aan te passen.
 			Of maak een nieuwe file aan.
@@ -33,27 +34,34 @@
 			initEditor() {
 
 				this.editor = new Editor('#editor')
-				// this.editor.on('change', () => {
 
-				// 	if(this.active) {
-
-				// 		// this.active.content = this.editor.getTextForStorage()
-				// 		// this.updateFile()
-				// 	}
+				this.editor.on('change', () => {
 					
-				// })
+					// update the file if we change the first 
+					// parts of the file
+					var caret = this.editor.getCaret().start
+					if (caret < 140) {
+
+						this.saveContent()
+					}
+				})
+			},
+
+			saveContent() {
+
+				this.activeFile.content = this.editor.getTextForStorage()
+				this.updateFile(this.activeFile.id, this.activeFile)
 			},
 
 			updateContent() {
 
-				console.log('updating content')
-				this.editor.setText(this.active.content)
+				this.editor.setText(this.activeFile.content)
 			}
 		},
 
 		vuex: {
 			getters: {
-				active: state => state.active.file
+				activeFile: state => state.active.file
 			},
 			actions: {
 				updateFile
@@ -73,7 +81,7 @@
 	#editor {
 
 		overflow: scroll;
-		height: 100%;
+		height: 90%;
 		/*counter-reset: paragraph;*/
 		
 		
@@ -83,14 +91,15 @@
 
 	.hljs-emphasis {
 
-		font-weight: bold
+		background-color: purple;
+		color: #fff;
 	}
 
 	.editor__section {
 		font-size: 18px;
 		position: relative;
-		text-shadow: 0 0 0 #000;
-		color: transparent;
+		/*text-shadow: 0 0 0 #000;*/
+		/*color: transparent;*/
 		padding: 0 50px;
 			line-height: 32px;
 			min-height: 32px;

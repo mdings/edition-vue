@@ -30,7 +30,6 @@
 
 <style lang="sass" scoped>
 .file {
-  padding: 10px;
   min-height: 60px;
   border-bottom: 1px solid #f1f2f4;
 }

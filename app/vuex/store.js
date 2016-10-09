@@ -1,6 +1,3 @@
-/*
-** TODO: Put database operations in a seperate window to avoid blocking the UI!
-*/
 import Vue from 'vue'
 import Vuex from 'vuex'
 import uniqid from 'uniqid'
@@ -17,7 +14,7 @@ const state = {
   active: {
     drag: null,
     group: null,
-    file: null
+    file: null // might to rename this to 'editor' for consistency sake
   },
 }
 
@@ -76,12 +73,15 @@ const mutations = {
 
   },
 
-  UPDATE_FILE (state) {
+  UPDATE_FILE (state, id, record) {
+
+    console.log(id)
+    console.log(record)
 
     ipc.send('update-record', {
       'store': 'files',
-      'id': state.active.file.id,
-      'record': JSON.stringify(state.active.file)
+      'id': id,
+      'record': JSON.stringify(record)
     })
   },
 
@@ -107,11 +107,12 @@ const mutations = {
 
   /* STATE MODIFIERS */
   SET_STATE (state, payload) {
+
     state[payload.state] = payload.records
   },
 
   SET_ACTIVE_GROUP (state, group) {
-    // get the ids recursively from the groups
+    // get the ids recursively from the nested groups
     const getIds = (ids, node) => {
       ids.push(node.id)
       if (node.nodes && node.nodes.length) {
@@ -122,6 +123,7 @@ const mutations = {
     }
     let ids = []
     getIds(ids, group)
+    console.log('filtering records')
     ipc.send('filter-records', {'groups': ids})
     state.active.group = group
   },

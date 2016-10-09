@@ -28,14 +28,19 @@ export const createFile = ({dispatch}) => {
     dispatch('CREATE_FILE')
 }
 
-export const updateFile = ({dispatch}) => {
+export const updateFile = ({dispatch}, id, record) => {
 
-    dispatch('UPDATE_FILE')
+    dispatch('UPDATE_FILE', id, record)
 }
 
 export const setActiveFile = ({dispatch}, file) => {
 
     dispatch('SET_ACTIVE_FILE', file)
+}
+
+export const setActiveDragFile = ({dispatch}, file) => {
+    
+     dispatch('SET_ACTIVE_DRAG_FILE', file)
 }
 
 

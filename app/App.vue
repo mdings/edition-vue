@@ -100,6 +100,7 @@
 
 	.flex-panel {
 
+		padding: 0 15px;
 		position: relative;
 		height: 100%;
 		overflow: hidden;
