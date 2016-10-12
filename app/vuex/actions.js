@@ -33,6 +33,11 @@ export const updateFile = ({dispatch}, id, record) => {
     dispatch('UPDATE_FILE', id, record)
 }
 
+export const removeLocalFile = ({dispatch}, id) => {
+
+    dispatch('REMOVE_LOCAL_FILE', id)
+}
+
 export const setActiveFile = ({dispatch}, file) => {
 
     dispatch('SET_ACTIVE_FILE', file)

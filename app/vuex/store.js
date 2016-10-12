@@ -75,9 +75,6 @@ const mutations = {
 
   UPDATE_FILE (state, id, record) {
 
-    console.log(id)
-    console.log(record)
-
     ipc.send('update-record', {
       'store': 'files',
       'id': id,
@@ -99,6 +96,14 @@ const mutations = {
 
   DELETE_FILE (state) {
 
+  },
+
+  REMOVE_LOCAL_FILE (state, id) {
+
+    state.files = state.files.filter((file) => {
+
+      return file.id != id
+    })
   },
 
   DELETE_GROUP (state) {

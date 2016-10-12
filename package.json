@@ -44,7 +44,7 @@
     "electron-screenshot-app": "^3.0.1",
     "jquery": "^3.0.0",
     "localforage": "^1.4.2",
-    "lodash": "^4.14.1",
+    "lodash": "^4.16.4",
     "marked": "^0.3.6",
     "mkdirp": "^0.5.1",
     "mousetrap": "^1.6.0",

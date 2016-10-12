@@ -19,7 +19,7 @@
 
 <script>
   import _ from 'lodash'  
-  import {setActiveGroup, updateGroup, updateFile} from '../vuex/actions'
+  import {setActiveGroup, updateGroup, updateFile, removeLocalFile} from '../vuex/actions'
 
   export default {
     name: 'group',
@@ -36,6 +36,7 @@
 
     vuex: {
       getters: {
+          activeFiles: state => state.files,
           activeGroup: state => state.active.group,
           activeDragFile: state => state.active.drag
        
@@ -44,7 +45,8 @@
       actions: {
         setActiveGroup,
         updateGroup,
-        updateFile
+        updateFile,
+        removeLocalFile
         // setActiveGroup,
         // saveRecord
       }
@@ -79,8 +81,10 @@
         // set the new group for the file
         this.activeDragFile.group = group
 
+
         this.updateFile(this.activeDragFile.id, this.activeDragFile)
-        this.setActiveGroup(this.activeGroup)
+        this.removeLocalFile(fileId)
+        // this.setActiveGroup(this.activeGroup)
         
       },
 

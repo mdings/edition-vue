@@ -25,7 +25,7 @@
 
 		ready() {
 
-			this.$watch('active', this.updateContent)
+			this.$watch('activeFile', this.updateContent)
 			this.$nextTick(this.initEditor)
 		},
 
