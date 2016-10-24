@@ -10,6 +10,7 @@ Vue.use(Vuex)
 const state = {
   settings: {},
   library: [],
+  folders: [],
   files: [],
   active: {
     drag: null,
@@ -34,8 +35,6 @@ const mutations = {
       content: ''
     }
 
-    console.log(file)
-
     state.files.push(file)
 
     ipc.send('create-record', {
@@ -51,15 +50,19 @@ const mutations = {
     const group = {
       id: id,
       name: 'Group' + _.random(1,50),
-      nodes: [],
+      children: [],
       created: new Date().getTime(),
     }
 
     // If there's an active state then append it to there
     if(!state.active.group) {
+
       state.library.push(group)
+
     } else {
-      state.active.group.nodes.push(group)
+
+      state.active.group.children.push(group)
+
     }
 
     mutations.UPDATE_GROUP(state)
@@ -112,7 +115,8 @@ const mutations = {
 
   /* STATE MODIFIERS */
   SET_STATE (state, payload) {
-
+    
+    console.log(payload.records)
     state[payload.state] = payload.records
   },
 

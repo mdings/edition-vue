@@ -1,5 +1,6 @@
 <template>
     <div class="flex-panel">
+        <input type="search" @keyup="findRecords">
         <div class="files">
             <div v-if="active.group">Showing files in {{active.group.name}} ({{filterData.length}})</div>
             <div v-if="!active.group">Showing all files ({{files.length}})</div>
@@ -24,11 +25,14 @@
     import file from './File.vue'
     import _ from 'lodash'
     import {setActiveFile, setActiveDragFile} from '../vuex/actions'
+
+    const ipc = require('electron').ipcRenderer;
   
     export default {
 
         ready() {
 
+            this.listen()
         },
 
         components: {
@@ -89,6 +93,23 @@
                 event.dataTransfer.setData('fileId', file.id);
                 event.dataTransfer.setData('fileGroup', file.group);
                 console.log(file.content)
+            },
+
+            findRecords(e) {
+
+                if (e.target.value.length > 0) {
+
+                    ipc.send('fuzzy-search-records', e.target.value)
+                }
+                
+            },
+
+            listen() {
+
+                ipc.on('fuzzy-search-records-done', (event, payload) => { 
+
+                    console.log(payload)
+                 })
             }
         }
 
@@ -106,8 +127,10 @@
 
   .files {
 
-      overflow-y: auto;
+        transform: translate3d(0,0,0);
       height: 100%;
+      overflow: scroll;
+      -webkit-overflow-scrolling: touch;
   }
 
   .file {

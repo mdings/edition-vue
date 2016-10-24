@@ -1,5 +1,7 @@
 const {remote,ipcRenderer} = require('electron')
 
+const Fuse = require('fuse.js')
+
 const stores = {
 
 	library: localforage.createInstance({name: 'library'}),
@@ -7,8 +9,12 @@ const stores = {
 	settings: localforage.createInstance({name: 'settings'})
 }
 
-var files = [];
 
+var files = [];
+const fuse = new Fuse(files, {
+
+	keys: ['content']
+});
 
 window.onload = () => {
 
@@ -31,6 +37,7 @@ window.onload = () => {
 			if (iterator == 'files') {
 
 				files = records	
+				fuse.set(records)
 			}
 
 			ipcRenderer.send('load-records-done', {
@@ -54,6 +61,7 @@ window.onload = () => {
 		
 		files.push(JSON.parse(record))
 		stores[store].setItem(id, JSON.parse(record))
+		fuse.set(files)
 	})
 
 	/*
@@ -78,6 +86,7 @@ window.onload = () => {
 		})
 
 		stores[store].setItem(id, JSON.parse(record))
+		fuse.set(files)
 	})
 
 
@@ -99,6 +108,17 @@ window.onload = () => {
 			'records': records
 		})
 		
+	})
+
+	ipcRenderer.on('fuzzy-search-records', (event, payload) => {
+		
+		
+		ipcRenderer.send('fuzzy-search-records-done', {
+
+			'state': 'files',
+			'records': fuse.search(payload)
+		})
+
 	})
 
 }

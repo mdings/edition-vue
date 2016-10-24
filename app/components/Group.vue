@@ -54,11 +54,11 @@
 
     computed: {
       isFolder() {
-        return this.model.nodes && this.model.nodes.length
+        return this.model.children && this.model.children.length
       },
 
       sortedData() {
-        return _.orderBy(this.model.nodes, ['created'], ['desc']);
+        return _.orderBy(this.model.children, ['created'], ['desc']);
       }
     },
 

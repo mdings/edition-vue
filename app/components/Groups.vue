@@ -2,17 +2,14 @@
 	<div class="flex-panel" :style="{width: settings.toolbarWidth}">
 		<div class="groups">
 			<span @click="resetActiveGroup()">On My Mac</span>
-			<div v-for="item in sortedData">
-				<group class="item" :model="item"></group>
+			<div v-for="group in sortedData">
+				<group class="group" :model="group"></group>
 			</div>
-			<!-- <div v-for="file in library" @click="setActiveFile(file)" class="panel__file" :class="{'is-active': active === file}">
-				{{file.type}}-{{file.name}}
-				<span class="file__close" @click="closeFile(file)">x</span>
-			</div> -->
 		</div>
 		<div class="actions">
 			<button @click="createFile()">new file</button> 
 			<button @click="createGroup()">new group</button>
+			<button @click="createExternal()">new external folder</button>
 		</div>
 		<resizer></resizer>
 </template>
@@ -24,6 +21,8 @@
 	import {createGroup, createFile, updateGroup, resetActiveGroup} from '../vuex/actions'
 
 	const {remote} = require('electron')
+	const {dialog} = require('electron').remote
+	const ipc = require('electron').ipcRenderer;
 	const {Menu, MenuItem} = remote
 	const menu = new Menu()	
 
@@ -104,6 +103,17 @@
 					this.contextMenuElm = null
 					this.contextMenuModel = null
 				}
+			},
+
+			createExternal() {
+
+				dialog.showOpenDialog({
+					
+					properties: ['openDirectory'],
+				}, (dirs) => {
+
+					ipc.send('watch-directory', dirs)
+				})
 			}
 
 			

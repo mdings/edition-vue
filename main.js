@@ -16,7 +16,7 @@ function getParameterByName(name, url) {
 }
 
 function createWindow (code) {
-  mainWindow = new BrowserWindow({width: 800, height: 600, minWidth: 600, minHeight: 600, titleBarStyle: 'hidden'});
+  mainWindow = new BrowserWindow({width: 800, height: 600, minWidth: 600, minHeight: 600});
   backgroundWindow = createBackgroundWindow();
   mainWindow.loadURL(`file:// ${__dirname}/index.html`);
 
@@ -112,3 +112,7 @@ ipcMain.on('filter-records', (event, payload) => backgroundWindow.webContents.se
 ipcMain.on('filter-records-done', (event, payload) => mainWindow.webContents.send('filter-records-done', payload));
 ipcMain.on('create-record', (event, payload) => backgroundWindow.webContents.send('create-record', payload));
 ipcMain.on('update-record', (event, payload) => backgroundWindow.webContents.send('update-record', payload));
+ipcMain.on('fuzzy-search-records', (event, payload) => backgroundWindow.webContents.send('fuzzy-search-records', payload));
+ipcMain.on('fuzzy-search-records-done', (event, payload) => mainWindow.webContents.send('fuzzy-search-records-done', payload));
+ipcMain.on('watch-directory', (event, payload) => backgroundWindow.webContents.send('watch-directory', payload));
+ipcMain.on('watch-directory-done', (event, payload) => mainWindow.webContents.send('watch-directory-done', payload));

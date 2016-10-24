@@ -1,7 +1,7 @@
 <template>
-	<title></title>
-	<main @click="clickApp">
+	<main>
 		<groups></groups>
+		<folders></folders>
 		<files></files>
 		<editor></editor>	
 	</main>
@@ -11,6 +11,7 @@
 <script>
 	import title from './components/Title.vue'
 	import groups from './components/Groups.vue'
+	import folders from './components/Folders.vue'
 	import files from './components/Files.vue'
 	import editor from './components/Editor.vue'
 	// import Mousetrap from 'mousetrap'
@@ -53,6 +54,8 @@
 	  	listen() {
 	  		ipc.on('load-records-done', (event, payload) => { this.setState(payload) })
 			ipc.on('filter-records-done', (event, payload) => { this.setState(payload) })
+			ipc.on('fuzzy-search-records-done', (event, payload) => { this.setState(payload) })
+			ipc.on('watch-directory-done', (event, payload) => { this.setState(payload) })
 	  	},
 
 	  	clickApp() {
@@ -64,6 +67,7 @@
 		components: {
 			title,
 			groups,
+			folders,
 			files,
 			editor
 		}
@@ -86,23 +90,18 @@
 
 	html,
 	body {
-		height: 100%;
-		overflow: hidden;
 		background: rgba(0, 0, 0, 0);
 	}
 
 	main {
 		user-select: none;
 		display: flex; 
-		height: calc(100vh - 23px);
+		height: 100vh;
 		overflow: hidden;
 	}
 
 	.flex-panel {
-
 		padding: 0 15px;
 		position: relative;
-		height: 100%;
-		overflow: hidden;
 	}
 </style> 
